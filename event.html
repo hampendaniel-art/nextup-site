@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Event • NextUp</title>
+<link rel="icon" href="favicon.ico">
+<meta name="description" content="Event details on NextUp">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-50 text-gray-900">
+<nav class="bg-white shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-3"><svg class="h-6 w-6 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7z" stroke-width="1.5"/></svg><span class="font-bold">NextUp</span></a>
+    <div class="flex gap-4 items-center"><a href="index.html">Home</a><a href="submit.html">Submit Event</a></div>
+  </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div id="content"></div>
+</main>
+
+<footer class="bg-gray-800 text-gray-300">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-sm">&copy; 2025 NextUp, Inc. All rights reserved.</div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+<script>
+feather && feather.replace();
+
+async function getParams() {
+  return new URLSearchParams(location.search);
+}
+
+async function loadEventData() {
+  try {
+    const res = await fetch('events.json');
+    const json = await res.json();
+    return json.events || [];
+  } catch(e){ return []; }
+}
+
+function renderEvent(ev) {
+  document.title = ev.title + ' • NextUp';
+  const container = document.getElementById('content');
+  container.innerHTML = `
+  <article class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="relative h-64 bg-gray-200">
+      <img src="${ev.image||'placeholder.jpg'}" alt="${ev.title}" class="w-full h-full object-cover">
+      <div class="absolute bottom-4 left-4 text-white">
+        <h1 class="text-2xl font-bold">${ev.title}</h1>
+        <div class="mt-1 text-sm">${ev.location} • ${new Date(ev.start).toLocaleDateString()}</div>
+      </div>
+    </div>
+    <div class="p-6">
+      <div class="flex gap-3 flex-wrap">
+        <span class="px-3 py-1 rounded-full bg-purple-100 text-purple-800">${ev.category}</span>
+        <span class="px-3 py-1 rounded-full bg-green-100 text-green-800">${ev.free? 'Free' : ('$'+ev.price)}</span>
+      </div>
+      <div class="mt-6 prose max-w-none text-gray-700">${ev.description}</div>
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-gray-50 p-4 rounded">
+          <h4 class="font-semibold">Details</h4>
+          <p class="text-sm mt-2"><strong>When:</strong> ${new Date(ev.start).toLocaleString()} - ${new Date(ev.end).toLocaleString()}</p>
+          <p class="text-sm mt-1"><strong>Where:</strong> ${ev.location}</p>
+          <p class="text-sm mt-1"><strong>Organizer:</strong> ${ev.organizer}</p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded">
+          <h4 class="font-semibold">Actions</h4>
+          <div class="mt-2 flex flex-col gap-2">
+            <a class="px-4 py-2 rounded bg-purple-600 text-white inline-block text-center" href="${ev.ticketUrl||'#'}" target="_blank">Buy Tickets</a>
+            <button id="addCal" class="px-4 py-2 rounded border">Add to Calendar</button>
+            <button id="getDir" class="px-4 py-2 rounded border">Get Directions</button>
+            <button id="saveBtn" class="px-4 py-2 rounded border">Save Event</button>
+          </div>
+        </div>
+      </div>
+      <div class="mt-8 bg-white p-4 rounded shadow">
+        <h4 class="font-semibold">Location (Map)</h4>
+        <div id="map" class="mt-4 h-64 bg-gray-200 rounded">Map placeholder — integrate Google Maps / Mapbox in production.</div>
+      </div>
+    </div>
+  </article>
+  `;
+  document.getElementById('addCal').addEventListener('click', ()=> {
+    const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nUID:${ev.id}\nDTSTAMP:${new Date(ev.start).toISOString().replace(/[-:]/g,'').split('.')[0]}Z\nDTSTART:${new Date(ev.start).toISOString().replace(/[-:]/g,'').split('.')[0]}Z\nDTEND:${new Date(ev.end).toISOString().replace(/[-:]/g,'').split('.')[0]}Z\nSUMMARY:${ev.title}\nDESCRIPTION:${ev.description}\nEND:VEVENT\nEND:VCALENDAR`;
+    const blob = new Blob([ics], {type:'text/calendar'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `${ev.title.replace(/\s+/g,'_')}.ics`; a.click();
+    URL.revokeObjectURL(url);
+  });
+  document.getElementById('getDir').addEventListener('click', ()=> {
+    const q = encodeURIComponent(ev.location);
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${q}`, '_blank');
+  });
+  document.getElementById('saveBtn').addEventListener('click', ()=> {
+    const saved = JSON.parse(localStorage.getItem('nextup_saved')||'{}');
+    saved[ev.id]=ev;
+    localStorage.setItem('nextup_saved', JSON.stringify(saved));
+    alert('Saved to your list');
+  });
+}
+
+(async ()=>{
+  const params = await getParams();
+  const id = params.get('id');
+  const events = await loadEventData();
+  const ev = events.find(e=> e.id === id) || events[0];
+  if(ev) renderEvent(ev);
+  else document.getElementById('content').innerHTML = '<p>No event found.</p>';
+})();
+</script>
+</body>
+</html>

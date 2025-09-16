@@ -1,0 +1,45 @@
+{
+  "events":[
+    {
+      "id":"evt_001",
+      "title":"Summer Music Festival",
+      "category":"Music",
+      "start":"2025-06-12T12:00:00",
+      "end":"2025-06-12T22:00:00",
+      "location":"Downtown Park, Cityville",
+      "price":"45",
+      "free":false,
+      "image":"static/festival1.jpg",
+      "organizer":"City Events Inc.",
+      "description":"Join us for a full day of live music across multiple stages with food trucks, craft vendors, and family activities.",
+      "ticketUrl":"https://example.com/tickets/evt_001"
+    },
+    {
+      "id":"evt_002",
+      "title":"Taco & Tequila Fiesta",
+      "category":"Food & Drink",
+      "start":"2025-06-13T14:00:00",
+      "end":"2025-06-13T20:00:00",
+      "location":"Riverside Plaza",
+      "price":"15",
+      "free":false,
+      "image":"static/food1.jpg",
+      "organizer":"Riverside Food Co-op",
+      "description":"An afternoon of tacos, tequila tastings, and live music.",
+      "ticketUrl":""
+    },
+    {
+      "id":"evt_003",
+      "title":"Sunrise Yoga Hike",
+      "category":"Outdoors",
+      "start":"2025-06-12T06:00:00",
+      "end":"2025-06-12T09:00:00",
+      "location":"Mountain View Trailhead",
+      "price":"0",
+      "free":true,
+      "image":"static/outdoors1.jpg",
+      "organizer":"Trail Collective",
+      "description":"Guided sunrise hike with yoga at the summit. All levels welcome."
+    }
+  ]
+}

@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NextUp — Local Event & Adventure Finder</title>
+<link rel="icon" href="favicon.ico">
+<meta name="description" content="NextUp helps you discover local events and outdoor adventures near you — concerts, motorsports, food festivals, hikes and more.">
+<meta name="theme-color" content="#6b21a8">
+<link rel="manifest" href="manifest.json">
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-50 text-gray-900">
+<nav class="bg-white shadow-sm sticky top-0 z-40">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16 items-center">
+      <div class="flex items-center gap-3">
+        <svg class="h-7 w-7 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <a href="index.html" class="text-xl font-bold">NextUp</a>
+      </div>
+      <div class="hidden md:flex items-center gap-6">
+        <a href="index.html" class="text-sm font-medium text-purple-600">Home</a>
+        <a href="#categories" class="text-sm text-gray-600 hover:text-gray-900">Explore</a>
+        <a href="submit.html" class="text-sm text-gray-600 hover:text-gray-900">Submit Event</a>
+        <a href="#" id="savedLink" class="text-sm text-gray-600 hover:text-gray-900">Saved (<span id="savedCount">0</span>)</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="signInBtn" class="hidden md:inline-flex bg-purple-600 text-white px-3 py-1.5 rounded">Sign in</button>
+        <button id="menuBtn" class="md:hidden p-2 rounded text-gray-500"><svg class="h-6 w-6" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<header id="hero" class="hero-gradient text-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 text-center">
+    <h1 class="text-4xl md:text-6xl font-extrabold" data-aos="fade-up">Discover your next adventure</h1>
+    <p class="mt-4 max-w-2xl mx-auto text-lg" data-aos="fade-up" data-aos-delay="100">Find concerts, motorsports, food events, hikes, and local meetups near you.</p>
+    <div class="mt-10 max-w-xl mx-auto" data-aos="fade-up" data-aos-delay="200">
+      <div class="relative rounded-md search-shadow bg-white p-1 flex items-center">
+        <input id="searchInput" type="search" aria-label="Search events" placeholder="Search events, locations, or keywords..." class="w-full pl-4 pr-10 py-3 rounded-md focus:outline-none text-gray-800">
+        <button id="searchBtn" class="p-2 rounded-md text-purple-600">
+          <svg class="h-5 w-5" viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>
+        </button>
+      </div>
+      <div class="mt-4 flex justify-center gap-2 text-sm">
+        <button class="chip">Current location</button>
+        <button class="chip" data-filter="this-week">This weekend</button>
+        <button class="chip" data-filter="free">Free</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12">
+  <section id="categories" class="bg-transparent py-8">
+    <div class="text-center mb-6">
+      <h2 class="text-2xl font-bold">Browse categories</h2>
+      <p class="text-gray-600 mt-2">Quick links to popular event types</p>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      <button class="category-card" data-cat="Music"><i data-feather="music"></i><span>Music</span></button>
+      <button class="category-card" data-cat="Motorsports"><i data-feather="car"></i><span>Motorsports</span></button>
+      <button class="category-card" data-cat="Food & Drink"><i data-feather="coffee"></i><span>Food & Drink</span></button>
+      <button class="category-card" data-cat="Arts"><i data-feather="palette"></i><span>Arts</span></button>
+      <button class="category-card" data-cat="Outdoors"><i data-feather="map-pin"></i><span>Outdoors</span></button>
+      <button class="category-card" data-cat="Festivals"><i data-feather="users"></i><span>Festivals</span></button>
+    </div>
+  </section>
+
+  <section id="trending" class="py-8">
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h3 class="text-2xl font-bold">Trending this week</h3>
+        <p class="text-gray-600">Popular local events</p>
+      </div>
+      <div class="flex gap-2">
+        <button id="mapToggle" class="px-3 py-2 border rounded">Map View</button>
+        <button id="filterToggle" class="px-3 py-2 border rounded">Filters</button>
+      </div>
+    </div>
+
+    <div id="eventsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Event cards inserted by JS -->
+    </div>
+
+    <div class="mt-8 text-center">
+      <a href="#" class="inline-flex items-center px-6 py-3 rounded bg-purple-100 text-purple-700">View all events</a>
+    </div>
+  </section>
+
+  <section id="cta" class="py-12">
+    <div class="bg-white rounded-lg shadow p-8 lg:flex lg:items-center lg:justify-between">
+      <div>
+        <h3 class="text-xl font-bold">Have an event to share?</h3>
+        <p class="text-gray-600 mt-2">List it on NextUp and reach thousands of local people looking for things to do.</p>
+      </div>
+      <div class="mt-6 lg:mt-0">
+        <a href="submit.html" class="px-5 py-3 rounded bg-purple-600 text-white">Submit Your Event</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="bg-gray-800 text-gray-300 mt-12">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
+    <div>
+      <h4 class="uppercase text-xs text-gray-400">Explore</h4>
+      <ul class="mt-4 space-y-2 text-sm"><li><a href="#" class="hover:underline">All Events</a></li><li><a href="#" class="hover:underline">Popular Categories</a></li></ul>
+    </div>
+    <div>
+      <h4 class="uppercase text-xs text-gray-400">Company</h4>
+      <ul class="mt-4 space-y-2 text-sm"><li><a href="#" class="hover:underline">About</a></li><li><a href="#" class="hover:underline">Blog</a></li></ul>
+    </div>
+    <div>
+      <h4 class="uppercase text-xs text-gray-400">Support</h4>
+      <ul class="mt-4 space-y-2 text-sm"><li><a href="#" class="hover:underline">Help Center</a></li><li><a href="#" class="hover:underline">Contact</a></li></ul>
+    </div>
+    <div>
+      <h4 class="uppercase text-xs text-gray-400">Stay Connected</h4>
+      <div class="mt-4 flex gap-4">
+        <a href="#" aria-label="facebook"><i data-feather="facebook"></i></a>
+        <a href="#" aria-label="instagram"><i data-feather="instagram"></i></a>
+      </div>
+    </div>
+  </div>
+  <div class="border-t border-gray-700 text-center py-6 text-sm">&copy; 2025 NextUp, Inc. All rights reserved.</div>
+</footer>
+
+<!-- Templates and scripts -->
+<template id="cardTpl">
+  <div class="event-card bg-white overflow-hidden shadow rounded-lg transition-transform duration-150">
+    <div class="relative pb-48 overflow-hidden">
+      <img class="absolute inset-0 h-full w-full object-cover" src="" alt="Event image">
+      <div class="absolute top-4 right-4">
+        <button class="favBtn p-2 rounded-full bg-white bg-opacity-90 text-gray-900" title="Save">
+          <i data-feather="heart"></i>
+        </button>
+      </div>
+    </div>
+    <div class="p-6">
+      <div class="flex items-center">
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 category"></span>
+        <span class="ml-auto text-sm text-gray-500 date"></span>
+      </div>
+      <h3 class="mt-2 text-lg font-semibold title"></h3>
+      <p class="mt-2 text-gray-600 location"></p>
+      <div class="mt-4 flex justify-between items-center">
+        <span class="text-lg font-bold price"></span>
+        <a class="btnView inline-flex px-4 py-2 rounded text-white bg-purple-600">View</a>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+<script>
+AOS && AOS.init({duration:700, once:true});
+feather && feather.replace();
+
+// simple client-side demo dataset (would be replaced with API in production)
+const EVENTS_URL = 'events.json';
+
+async function loadEvents() {
+  try {
+    const res = await fetch(EVENTS_URL);
+    const data = await res.json();
+    return data.events || [];
+  } catch(e) {
+    console.error(e);
+    return [];
+  }
+}
+
+function formatDate(d) {
+  try { return new Date(d).toLocaleString(); } catch(e){ return d; }
+}
+
+function renderEvents(events) {
+  const grid = document.getElementById('eventsGrid');
+  grid.innerHTML = '';
+  const tpl = document.getElementById('cardTpl');
+  events.forEach(ev => {
+    const copy = tpl.content.cloneNode(true);
+    copy.querySelector('img').src = ev.image || 'placeholder.jpg';
+    copy.querySelector('img').alt = ev.title;
+    copy.querySelector('.category').textContent = ev.category;
+    copy.querySelector('.date').textContent = new Date(ev.start).toLocaleDateString();
+    copy.querySelector('.title').textContent = ev.title;
+    copy.querySelector('.location').textContent = ev.location;
+    copy.querySelector('.price').textContent = ev.price || (ev.free ? 'Free' : '');
+    const view = copy.querySelector('.btnView');
+    view.href = `event.html?id=${encodeURIComponent(ev.id)}`;
+    view.addEventListener('click', ()=> location.href = `event.html?id=${encodeURIComponent(ev.id)}`);
+    const favBtn = copy.querySelector('.favBtn');
+    favBtn.addEventListener('click', ()=> toggleSave(ev.id, ev));
+    grid.appendChild(copy);
+  });
+  updateSavedCount();
+}
+
+function toggleSave(id, ev) {
+  const saved = JSON.parse(localStorage.getItem('nextup_saved') || '{}');
+  if (saved[id]) delete saved[id];
+  else saved[id] = ev;
+  localStorage.setItem('nextup_saved', JSON.stringify(saved));
+  updateSavedCount();
+}
+
+function updateSavedCount() {
+  const saved = JSON.parse(localStorage.getItem('nextup_saved') || '{}');
+  document.getElementById('savedCount').textContent = Object.keys(saved).length;
+}
+
+document.getElementById('searchBtn').addEventListener('click', async ()=> {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const events = await loadEvents();
+  const filtered = events.filter(e => (e.title+e.location+e.category+ (e.tags||'')).toLowerCase().includes(q));
+  renderEvents(filtered);
+});
+
+document.getElementById('mapToggle').addEventListener('click', ()=> alert('Map view placeholder — integrate Google Maps or Mapbox for production.'));
+document.getElementById('filterToggle').addEventListener('click', ()=> alert('Filters placeholder — build filter UI for date, distance, category, price.'));
+
+window.addEventListener('load', async ()=> {
+  const events = await loadEvents();
+  renderEvents(events);
+  updateSavedCount();
+});
+</script>
+
+</body>
+</html>
