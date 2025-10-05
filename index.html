@@ -1,47 +1,63 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NextUp • Local Events</title>
-<link rel="icon" href="favicon.ico">
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="styles.css">
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NextUp • Discover Local Events</title>
+  <link rel="icon" href="favicon.ico">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .fade-in { animation: fadeIn 0.8s ease forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
 </head>
-<body class="bg-gray-50 text-gray-900">
 
-<nav class="bg-white shadow">
-  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-    <a href="index.html" class="font-bold text-purple-600">NextUp</a>
+<body class="bg-gradient-to-br from-purple-50 via-white to-blue-50 min-h-screen text-gray-800">
+
+<!-- Navbar -->
+<nav class="bg-white shadow-sm sticky top-0 z-10">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+    <a href="index.html" class="text-2xl font-extrabold text-purple-600">NextUp</a>
     <div class="space-x-4 text-sm">
-      <a href="submit.html" class="hover:underline">Submit Event</a>
-      <a href="saved.html" class="hover:underline">Saved</a>
+      <a href="submit.html" class="text-gray-700 hover:text-purple-600 transition">Submit Event</a>
+      <a href="saved.html" class="text-gray-700 hover:text-purple-600 transition">Saved</a>
     </div>
   </div>
 </nav>
 
-<main class="max-w-6xl mx-auto p-6">
-  <h1 class="text-3xl font-bold mb-4">Find Local Events</h1>
-  <input id="search" placeholder="Search events..." 
-         class="w-full border p-2 rounded mb-6">
+<!-- Header -->
+<header class="text-center py-12 px-6">
+  <h1 class="text-4xl font-extrabold mb-2 text-gray-900">Discover What’s Happening Near You</h1>
+  <p class="text-gray-600">Local concerts, meetups, shows, and more — updated live from our community.</p>
+</header>
 
-  <div id="events" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+<!-- Search -->
+<section class="max-w-3xl mx-auto px-4 mb-8">
+  <input id="search" type="text" placeholder="Search events..."
+    class="w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:ring-2 focus:ring-purple-400 focus:outline-none" />
+</section>
+
+<!-- Event Grid -->
+<main class="max-w-7xl mx-auto px-4 pb-20">
+  <div id="events" class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3"></div>
 </main>
 
-<footer class="bg-gray-900 text-gray-300 py-6 text-center">
-  &copy; 2025 NextUp
+<!-- Footer -->
+<footer class="bg-gray-900 text-gray-300 py-6 text-center text-sm">
+  &copy; 2025 NextUp — Connecting People Through Local Experiences
 </footer>
 
 <script>
-// 🔹 Your published Sheet CSV (replace with your actual one)
+// ✅ Paste your Google Apps Script Web App URL here:
+const FORM_ENDPOINT = "https://script.google.com/macros/s/AKfycbxU5gyJJPQp71UpX6EGjCX8z-cV2GVWcjid-xV5LW7c3lnSQ1ullgD7oIC1Ft38aiBZJA/exec";
+
+// ✅ Your published Google Sheet CSV link
 const SHEET_CSV_URL =
  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTVoIxW-FLTTEXSKMZcp7CWPm2KwEQ0T27rLnvTFeAwyeaJjxGb3Rx43BgMwdIBudOB2y4tmKCTshob/pub?output=csv";
 
-// 🔹 Your Apps Script Web App URL (paste the same as in submit.html)
-const FORM_ENDPOINT = "YOUR_WEBAPP_URL_HERE";
-
-// Parse CSV from Sheet
+// Fetch events from Google Sheet CSV
 async function fetchSheetEvents() {
   return new Promise((resolve, reject) => {
     Papa.parse(SHEET_CSV_URL, {
@@ -53,67 +69,76 @@ async function fetchSheetEvents() {
   });
 }
 
-// Fetch recent submissions from Apps Script endpoint
+// Fetch new submissions from your Apps Script
 async function fetchSubmissions() {
   try {
     const res = await fetch(FORM_ENDPOINT + "?action=list");
     if (!res.ok) return [];
     return await res.json();
   } catch (e) {
-    console.error("No submissions fetched:", e);
+    console.warn("No live submissions fetched:", e);
     return [];
   }
 }
 
-// Merge Sheet + Submissions
+// Combine all data sources
 async function loadEvents() {
-  const [sheetEvents, subs] = await Promise.all([
+  const [sheetEvents, submissions] = await Promise.all([
     fetchSheetEvents(),
     fetchSubmissions()
   ]);
 
   let events = [];
-  if (Array.isArray(sheetEvents)) events = events.concat(sheetEvents);
-  if (Array.isArray(subs)) events = events.concat(subs);
+  if (Array.isArray(sheetEvents)) events.push(...sheetEvents);
+  if (Array.isArray(submissions)) events.push(...submissions);
 
   renderEvents(events);
 }
 
-// Render UI
+// Render all events
 function renderEvents(events) {
-  const q = document.getElementById("search").value.toLowerCase();
-  const wrap = document.getElementById("events");
-  wrap.innerHTML = "";
+  const searchQuery = document.getElementById("search").value.toLowerCase();
+  const container = document.getElementById("events");
+  container.innerHTML = "";
 
-  events
-    .filter(ev => !q || (ev.title && ev.title.toLowerCase().includes(q)))
-    .forEach(ev => {
-      const card = document.createElement("div");
-      card.className = "bg-white rounded shadow p-4 flex flex-col";
+  const filtered = events.filter(ev => 
+    !searchQuery || (ev.title && ev.title.toLowerCase().includes(searchQuery))
+  );
 
-      if (ev.image) {
-        card.innerHTML += `<img src="${ev.image}" alt="" class="rounded mb-2 h-40 w-full object-cover">`;
-      }
+  if (!filtered.length) {
+    container.innerHTML = `<p class="text-gray-500 col-span-full text-center">No events found.</p>`;
+    return;
+  }
 
-      card.innerHTML += `
-        <h2 class="text-lg font-semibold">${ev.title || "Untitled"}</h2>
-        <p class="text-sm text-gray-500">${ev.location || ""}</p>
-        <p class="text-sm text-gray-500">${ev.start || ""}</p>
-        <button class="mt-auto bg-purple-600 text-white px-3 py-1 rounded text-sm save-btn">
-          Save
-        </button>
-      `;
+  filtered.forEach(ev => {
+    const card = document.createElement("div");
+    card.className = "bg-white rounded-2xl shadow hover:shadow-lg transition p-4 flex flex-col fade-in";
 
-      card.querySelector(".save-btn").addEventListener("click", () => saveEvent(ev));
-      wrap.appendChild(card);
-    });
+    if (ev.image) {
+      card.innerHTML += `<img src="${ev.image}" alt="" class="rounded-xl mb-3 h-48 w-full object-cover">`;
+    }
+
+    card.innerHTML += `
+      <h2 class="text-xl font-semibold mb-1">${ev.title || "Untitled Event"}</h2>
+      <p class="text-sm text-gray-500 mb-2">${ev.location || ""}</p>
+      <p class="text-sm text-gray-600 mb-4">${ev.start || ""}</p>
+      <div class="flex justify-between mt-auto items-center">
+        <button class="save-btn bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700 transition">Save</button>
+        <a href="event.html?id=${encodeURIComponent(ev.id || '')}" class="text-sm text-purple-600 hover:underline">Details</a>
+      </div>
+    `;
+
+    card.querySelector(".save-btn").addEventListener("click", () => saveEvent(ev));
+    container.appendChild(card);
+  });
 }
 
+// Save to localStorage
 function saveEvent(ev) {
   let saved = JSON.parse(localStorage.getItem("saved") || "[]");
   saved.push(ev);
   localStorage.setItem("saved", JSON.stringify(saved));
-  alert("Event saved!");
+  alert("✅ Event saved!");
 }
 
 document.getElementById("search").addEventListener("input", loadEvents);
